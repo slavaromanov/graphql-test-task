@@ -1,47 +1,49 @@
-enum State {
-	DONE
-	UNDOE
+enum Currency {
+	USD
+	EUR
 }
 
-type Task {
+type Rate {
 	"""
 		внутренний ИД задачи по которой будет осуществляться изменение состояния объекта в БД
 	"""
-	id: ID!
+	currency: Currency!
 	"""
 		текстовое описание задачи
 	"""
-	text: String!
-	"""
-		состояние задчаи
-	"""
-	state: State!
+	exchangeRate: Int!
+}
+
+input RateInput {
+	currency: Currency!
+	exchangeRate: Int!
 }
 
 type Query {
 	"""
-		получить список задач из БД
-		если state не указан, то отдаём ВСЁ
-		если state указан - отдаём задачи только с соотвествующим состоянием
+		получить список валют из БД
+		если currency не указан, то отдаём ВСЁ
+		если currency указан - отдаём курсы валют только с соотвествующей валютой
 	"""
-	getTasks(state: State): [Task!]!
+	getRates(currency: Currency): [Rate!]!
 }
 
 type Mutation {
 	"""
-		создаём новую задачу (проверка text на уникальность не нужна)
-		поле id создаётся на сервере, возвращается созданный объект
-		поле state в ответе всегда UNDONE
+		Обновляем курс валюты
 	"""
-	newTask(text: String!): Task!
+	updateRate(input: RateInput!): Boolean!
+}
+
+type Subscription {
+	""" 
+		подписываемся на обновления курса валюты
 	"""
-		меняем состояние UNDONE на DONE
-		если состояние задачи уже DONE, значит должна возвращаться ошибка
-	"""
-	doneTask(id: ID!): Task!
+	observeRate(currency: Currency!): Rate!
 }
 
 schema {
 	query: Query
 	mutation: Mutation
+	subscription: Subscription
 }
